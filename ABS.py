@@ -11,6 +11,8 @@ import datetime
 df = pd.read_excel('abs.xlsx')
 print ( df )
 
+
+## 注意与输入模版保持一致
 df_date = df.iloc[:,4:]
 print ( df_date )
 
@@ -20,4 +22,6 @@ print ( tmp1 )
 
 
 ## excel 模版是什么 ？
+
+print ( 'hello' )
 
