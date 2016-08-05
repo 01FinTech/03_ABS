@@ -1,27 +1,165 @@
 # -*- coding: utf-8 -*-
-## ABS
-## Haifeng XU
+## ------------------------- ##
+## ABS 文件
+## 输入文件模版是
+## Dr. Haifeng XU
 ## QQ: 78112407
 ## Email: hfxu@wxtrust.com
+## ------------------------- ##
 
 import numpy as np
 import pandas as pd
 import datetime
 
-df = pd.read_excel('abs.xlsx')
+## 封包日
+## 注意: 这里与后面的列名称保持一致
+_tmp_date = '2016-10-01'
+_project_fixed = pd.DataFrame ( { 'Date' : pd.Timestamp( _tmp_date) }, \
+								index = {'fixDate'} )
+
+
+print ('封包日是' )
+print ( _project_fixed )
+
+
+## --------------------------------
+## todo
+## 如何通过列名得到这些数字?
+## --------------------------------
+
+## excel 中, 项目名称所在列
+_project_name = 0
+
+## excel 中, 项目本金所在列
+_project_principle = 8
+
+## excel 中, 项目利率所在列
+_project_interest = 5
+
+## excel 中, 派息日从该列开始
+_interest_begin = 19
+
+
+
+df = pd.read_excel ( 'ABSINPUT.xlsx' )
+df = df.rename ( columns = { u'产品名称' : 'project' } )
+df = df.rename ( columns = { u'派息日'  : 'interest_day' } )
+
 print ( df )
 
+## df_cashflow 是最终输出的现金流量表
+df_cashflow = pd.DataFrame()
 
-## 注意与输入模版保持一致
-df_date = df.iloc[:,4:]
-print ( df_date )
+## --------------------------------------------------------- ##
+## begin of for
+## --------------------------------------------------------- ##
+for i in range (0, len( df )) :
+	## 创建一个空的临时 df
+	df_tmp = pd.DataFrame()
 
-tmp1 = ( df_date.iloc[0,1] - df_date.iloc[0,0] ).days * 100000 - 0.0
-tmp1 = format( tmp1, ',')
-print ( tmp1 )
+	## 将该行的派息日期加入上面的临时 df
+	df_tmp = pd.DataFrame( df.iloc[i:(i+1), _interest_begin: ]).T
+
+	## 为了与后面保持统一, 日期列名都是 1
+	df_tmp = df_tmp.rename ( columns = { i : 'Date' } )
+
+	## 删除该列中含有空日期的行
+	df_tmp = df_tmp.dropna ()
+
+	## -------------------
+	## todo
+	## 这里需要判断一下, 封包日是否在派息日
+	## --------------------
+
+	## --------------------
+
+	## 插入封包日
+	df_tmp = df_tmp.append( _project_fixed )
+
+	## 根据日期排序
+	df_tmp = df_tmp.sort_values( by = 'Date' )
+
+
+	## 插入项目名称
+	df_tmp[ 'Project' ] = df.iloc[ i ][ _project_name ]
+
+	## 插入项目利率
+	df_tmp[ 'Rate' ] = df.iloc[ i ][ _project_interest ]
+
+	## 插入项目本金
+	df_tmp[ 'Principle' ] = df.iloc[ i ][ _project_principle ]
+
+	## 插入相差天数
+	df_tmp [ 'Day' ] = 0
+
+	## 计算每个计息周期
+	for i in range ( 1, len ( df_tmp ) ) :
+		df_tmp[ 'Day' ][ i ] = ( df_tmp['Date'][i] - df_tmp['Date'][i-1]  ).days
+		## --------------------------------
+		## 测试
+		## --------------------------------
+#		print ( i )
+#		print (  df_tmp['Date'][i] )
+#		print ( df_tmp['Date'][i-1])
+#		print ( df_tmp[ 'Day' ][ i ]  )
+		## --------------------------------
+
+
+	## --------------------------------
+	## todo
+	##  这里的 365 指年化天数, 应该根据具体项目修改
+	## --------------------------------
+	## 计算每个付息日应收利息
+	df_tmp[ 'Interest' ] =  df_tmp[ 'Principle' ] * df_tmp[ 'Rate' ] * df_tmp[ 'Day' ] / 365
+
+	## 最后一期才归还本金, 其他部分还是0
+	for i in range ( 0 , len ( df_tmp ) - 1 ) :
+		df_tmp[ 'Principle' ][i] = 0
+
+	## 流入现金流合计
+	df_tmp[ 'Sum' ] = df_tmp[ 'Principle' ] + df_tmp[ 'Interest' ]
+
+
+	## --------------------------------
+	## todo
+	## 如何正确显示千位符
+	## 如何日期不显示分钟
+	## 如何日利率用 %
+	## 如何四舍五入, 保持两位小数
+	## 重新命名 Index
+	## --------------------------------
+	##	df_tmp[ 'Sum' ] = format ( df_tmp [ 'Sum' ] , ',' )
+
+	## 删除天数所在列
+	del df_tmp[ 'Day' ]
+
+	## 把该临时 df 追加到最后的输出中
+	df_cashflow = df_cashflow.append ( df_tmp )
+
+
+
+## --------------------------------------------------------- ##
+## end
+## --------------------------------------------------------- ##
+
+print ( df_cashflow )
+df_cashflow.to_excel ( 'ABSoutput.xlsx' )
+
+
+
+
+
+
+
+
+## tmp1 = ( df_date.iloc[0,1] - df_date.iloc[0,0] ).days * 100000 - 0.0
+## tmp1 = format( tmp1, ',')
+## print ( tmp1 )
+
+
+
+
+print ( 'hello, world!' )
 
 
 ## excel 模版是什么 ？
-
-print ( 'hello' )
-
