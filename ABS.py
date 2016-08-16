@@ -54,7 +54,7 @@ for i in range (0, len( df )) :
 	df_tmp = pd.DataFrame()
 
 	## 将该行的派息日期加入上面的临时 df
-	df_tmp = pd.DataFrame( df.iloc[i:(i+1), _interest_begin: ]).T
+	df_tmp = pd.DataFrame( df.iloc[ i:(i+1), _interest_begin: ]).T
 
 	## 为了与后面保持统一, 日期列名都是 1
 	df_tmp = df_tmp.rename ( columns = { i : 'Date' } )
@@ -125,7 +125,7 @@ for i in range (0, len( df )) :
 	del df_tmp[ 'Day' ]
 
 	## 把该临时 df 追加到最后的输出中
-	df_cashflow = df_cashflow.append ( df_tmp )
+	df_cashflow = df_cashflow.append ( df_tmp , ignore_index = True )
 
 ## --------------------------------------------------------- ##
 ## end
@@ -133,6 +133,11 @@ for i in range (0, len( df )) :
 
 print ( df_cashflow )
 df_cashflow.to_excel ( 'ABSoutput.xlsx' )
+
+
+## 输出结果按照日期排序
+df_cashflow.sort_values( by = 'Date' ).to_excel( 'ABSoutputByDate.xlsx' )
+
 
 
 ##
