@@ -14,7 +14,7 @@ import datetime
 
 ## 封包日
 ## 注意: 这里与后面的列名称保持一致
-_tmp_date = '2016-10-01'
+_tmp_date = '2016-08-30'
 _project_fixed = pd.DataFrame ( { 'Date' : pd.Timestamp( _tmp_date) }, \
 								index = {'fixDate'} )
 
@@ -128,16 +128,29 @@ for i in range (0, len( df )) :
 	df_cashflow = df_cashflow.append ( df_tmp , ignore_index = True )
 
 ## --------------------------------------------------------- ##
-## end
+## end of loop
 ## --------------------------------------------------------- ##
 
 print ( df_cashflow )
 df_cashflow.to_excel ( 'ABSoutput.xlsx' )
 
-
 ## 输出结果按照日期排序
-df_cashflow.sort_values( by = 'Date' ).to_excel( 'ABSoutputByDate.xlsx' )
+## df_cashflow.sort_values( by = 'Date' ).to_excel( 'test2.xlsx' )
+
+## 测试输出
+## df_cashflow.sort( columns = ['Date'], ascending = [True] ).to_excel( 'ABSoutputByDate.xlsx')
+
+## 按日期排序输出
+## 仅仅输出封包日之后的现金流
+df_cashflow[ df_cashflow['Date'] > _tmp_date ] \
+	.sort( columns = ['Date'], ascending = [True] ) \
+	.to_excel( 'ABSoutputByDate.xlsx')
 
 
 
-##
+
+
+
+
+
+## -------------------------------
